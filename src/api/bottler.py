@@ -54,8 +54,8 @@ def get_bottle_plan():
     # Expressed in integers from 1 to 100 that must sum up to 100.
 
     # Initial logic: bottle all barrels into red potions.
-    # with db.engine.begin() as connection:
-    #     result = connection.execute(sqlalchemy.text(sql_to_execute))
+    with db.engine.begin() as connection:
+        result = connection.execute(sqlalchemy.text("SELECT * from global_inventory"))
     return [
             {
                 "potion_type": [100, 0, 0, 0],
