@@ -21,12 +21,24 @@ def post_deliver_bottles(potions_delivered: list[PotionInventory], order_id: int
     """ 
     subtract right amount of ml, add right amount of potions
     """
-    # with db.engine.begin() as connection:
-    #     for potion in potions_delivered:
-            
-    #     result = connection.execute(sqlalchemy.text("UPDATE global_inventory SET millileters = millileters - :millileters"),
-    #         {"ml": added_ml, "inventory_id":barrel.sku})  # ML??))
+    # dummy data - hardcoded
+    potion_ml_map = {
+    "potion_type_1": 100,  
+    "potion_type_2": 150,  
+    }
+    with db.engine.begin() as connection:
+        subtracted_ml = 0
 
+        for potion in potions_delivered:
+            added_potions = potion.quantity
+            potion_type = potion.potion_type
+
+            ml_per_potion = potion_ml_map.get(potion_type, 0)
+            subtracted_ml += ml_per_potion * added_potions
+
+            result = connection.execute(sqlalchemy.text("UPDATE global_inventory SET millileters = millileters - :millileters, numpotions = numpotions + :numpotions"),
+                {"ml": subtracted_ml, "quantity":added_potions})  # ML??))
+                
     print(f"potions delievered: {potions_delivered} order_id: {order_id}")
 
     return "OK"

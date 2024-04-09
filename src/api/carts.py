@@ -129,7 +129,7 @@ def checkout(cart_id: int, cart_checkout: CartCheckout):
     with db.engine.begin() as connection:
         # Subtract potions
         connection.execute(
-            sqlalchemy.text("UPDATE global_inventory SET milliliters = milliliters - :total_potions_bought WHERE sku = :item_sku"),
+            sqlalchemy.text("UPDATE global_inventory SET milliliters = milliliters - :total_potions_bought"),
             {"total_potions_bought": total_potions_bought}
         )
         # Add gold
