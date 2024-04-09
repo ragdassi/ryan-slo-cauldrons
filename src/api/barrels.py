@@ -52,12 +52,13 @@ def get_wholesale_purchase_plan(wholesale_catalog: list[Barrel]):
     loop through the barrells roxanne offering, only do accept if its green
     """
     with db.engine.begin() as connection:
-        result = connection.execute(sqlalchemy.text("SELECT gold FROM global_inventory")).fetchone() # tuple is size 1 
+        result = connection.execute(sqlalchemy.text("SELECT gold FROM global_inventory")).fetchone()[0] # tuple is size 1 
     possible_green_barrels = []
     gold_count = 0
     for i, row in enumerate(wholesale_catalog):
         if(wholesale_catalog[i][0] == "SMALL_GREEN_BARREL"):
-            if (wholesale_catalog[i][3] + gold_count <= result):
+            if (wholesale_catalog[i][3] + gold_count <= result[0]):
+                print(result[0])
                 gold_count += wholesale_catalog[i][3]
                 quant += 1
     
