@@ -1,6 +1,8 @@
 from fastapi import APIRouter, Depends
 from pydantic import BaseModel
 from src.api import auth
+import sqlalchemy
+from src import database as db
 
 router = APIRouter(
     prefix="/barrels",
@@ -19,7 +21,26 @@ class Barrel(BaseModel):
 
 @router.post("/deliver/{order_id}")
 def post_deliver_barrels(barrels_delivered: list[Barrel], order_id: int):
-    """ """
+    """ 
+    only have one barrel over here 
+    """
+    if len(barrels_delivered) != 1:
+        return {"error": "Only one barrel can be delivered per order."}, 400
+
+    with db.engine.begin() as connection:
+        for barrel in barrels_delivered:
+            subtracted_gold = barrel.price
+            added_ml = barrel.ml_per_barrel
+         
+        connection.execute(
+            sqlalchemy.text("UPDATE global_inventory SET gold = gold - :gold, millileters = millileters + :millileters"),
+            {"gold": subtracted_gold, "ml": added_ml, "inventory_id":barrel.sku})  # ML??
+
+    # result is whole table. 
+
+        #if result is good, rturn it
+        # subtract gold, add ml
+    
     print(f"barrels delievered: {barrels_delivered} order_id: {order_id}")
 
     return "OK"
@@ -27,13 +48,32 @@ def post_deliver_barrels(barrels_delivered: list[Barrel], order_id: int):
 # Gets called once a day
 @router.post("/plan")
 def get_wholesale_purchase_plan(wholesale_catalog: list[Barrel]):
-    """ """
-    print(wholesale_catalog)
-
-    return [
-        {
-            "sku": "SMALL_RED_BARREL",
-            "quantity": 1,
+    """ 
+    loop through the barrells roxanne offering, only do accept if its green
+    """
+    with db.engine.begin() as connection:
+        result = connection.execute(sqlalchemy.text("SELECT gold FROM global_inventory")).fetchone() # tuple is size 1 
+    possible_green_barrels = []
+    gold_count = 0
+    for i, row in enumerate(wholesale_catalog):
+        if(wholesale_catalog[i][0] == "SMALL_GREEN_BARREL"):
+            if (wholesale_catalog[i][3] + gold_count <= result):
+                gold_count += wholesale_catalog[i][3]
+                quant += 1
+    
+    if (quant > 0):
+        to_add = {
+            "sku": "SMALL_GREEN_BARREL",
+            "quantity": quant
         }
-    ]
+        return [
+            to_add
+        ]
+    else:
+        return []
+                
+    # possible_green_barrels.append(row)
+            
+    
+    # if num I want to buy is 0, return empty list
 
