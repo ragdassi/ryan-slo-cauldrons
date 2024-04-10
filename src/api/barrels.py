@@ -34,7 +34,7 @@ def post_deliver_barrels(barrels_delivered: list[Barrel], order_id: int):
          
         connection.execute(
             sqlalchemy.text("UPDATE global_inventory SET gold = gold - :gold, millileters = millileters + :millileters"),
-            {"gold": subtracted_gold, "ml": added_ml, "inventory_id":barrel.sku})  # ML??
+            {"gold": subtracted_gold, "millileters": added_ml, "inventory_id":barrel.sku})  # ML??
 
     # result is whole table. 
 
@@ -49,19 +49,20 @@ def post_deliver_barrels(barrels_delivered: list[Barrel], order_id: int):
 @router.post("/plan")
 def get_wholesale_purchase_plan(wholesale_catalog: list[Barrel]):
     """ 
-    loop through the barrells roxanne offering, only do accept if its green
+    loop through the barrels roxanne offering, only do accept if its green
     """
     with db.engine.begin() as connection:
         result = connection.execute(sqlalchemy.text("SELECT gold FROM global_inventory")).fetchone()[0] # tuple is size 1 
     possible_green_barrels = []
     gold_count = 0
-    for i, row in enumerate(wholesale_catalog):
-        if(wholesale_catalog[i][0] == "SMALL_GREEN_BARREL"):
-            if (wholesale_catalog[i][3] + gold_count <= result[0]):
+    quant = 0
+    for i in range(len(wholesale_catalog)):
+        if(wholesale_catalog[i].potion_type == "SMALL_GREEN_BARREL"):
+            if (wholesale_catalog[i].price + gold_count <= result[0]):
                 print(result[0])
-                gold_count += wholesale_catalog[i][3]
+                gold_count += wholesale_catalog[i].price
                 quant += 1
-    
+
     if (quant > 0):
         to_add = {
             "sku": "SMALL_GREEN_BARREL",
