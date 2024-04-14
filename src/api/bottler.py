@@ -33,6 +33,7 @@ def post_deliver_bottles(potions_delivered: list[PotionInventory], order_id: int
             added_potions = potion.quantity
             potion_type = potion.potion_type
 
+            
             ml_per_potion = potion_ml_map.get(potion_type, 0)
             subtracted_ml += ml_per_potion * added_potions
 
@@ -57,7 +58,7 @@ def get_bottle_plan():
 
     # see how much ml we have in our global inventory
     with db.engine.begin() as connection:
-        result = connection.execute(sqlalchemy.text("SELECT * from global_inventory"))
+        result = connection.execute(sqlalchemy.text("SELECT millileters from global_inventory")).fetchone()[0] 
 
     # returning 5 red potions
     return [

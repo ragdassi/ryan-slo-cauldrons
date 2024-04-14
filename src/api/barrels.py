@@ -29,12 +29,12 @@ def post_deliver_barrels(barrels_delivered: list[Barrel], order_id: int):
 
     with db.engine.begin() as connection:
         for barrel in barrels_delivered:
-            subtracted_gold = barrel.price
-            added_ml = barrel.ml_per_barrel
+            subtracted_gold = barrel.price * barrel.quantity
+            added_ml = barrel.ml_per_barrel * barrel.quantity
          
-        connection.execute(
-            sqlalchemy.text("UPDATE global_inventory SET gold = gold - :gold, millileters = millileters + :millileters"),
-            {"gold": subtracted_gold, "millileters": added_ml, "inventory_id":barrel.sku})  # ML??
+            connection.execute(
+                sqlalchemy.text("UPDATE global_inventory SET gold = gold - :gold, green_ml = green_ml + :green_ml"),
+                {"gold": subtracted_gold, "millileters": added_ml})  # ML??
 
     # result is whole table. 
 
@@ -52,14 +52,13 @@ def get_wholesale_purchase_plan(wholesale_catalog: list[Barrel]):
     loop through the barrels roxanne offering, only do accept if its green
     """
     with db.engine.begin() as connection:
-        result = connection.execute(sqlalchemy.text("SELECT gold FROM global_inventory")).fetchone()[0] # tuple is size 1 
-    possible_green_barrels = []
+        gold = connection.execute(sqlalchemy.text("SELECT gold FROM global_inventory")).fetchone()[0] # tuple is size 1 
     gold_count = 0
     quant = 0
     for i in range(len(wholesale_catalog)):
-        if(wholesale_catalog[i].potion_type == "SMALL_GREEN_BARREL"):
-            if (wholesale_catalog[i].price + gold_count <= result[0]):
-                print(result[0])
+        if(wholesale_catalog[i].sku == "SMALL_GREEN_BARREL"):
+            if (wholesale_catalog[i].price + gold_count <= gold):
+                print("buying green barrel")
                 gold_count += wholesale_catalog[i].price
                 quant += 1
 
@@ -74,8 +73,4 @@ def get_wholesale_purchase_plan(wholesale_catalog: list[Barrel]):
     else:
         return []
                 
-    # possible_green_barrels.append(row)
-            
-    
-    # if num I want to buy is 0, return empty list
 
