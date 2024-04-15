@@ -63,16 +63,18 @@ def get_wholesale_purchase_plan(wholesale_catalog: list[Barrel]):
         gold = connection.execute(sqlalchemy.text("SELECT gold FROM global_inventory")).fetchone()[0] # tuple is size 1 
     gold_count = 0
     quant = 0
+    skus = []
     for i in range(len(wholesale_catalog)):
-        if(wholesale_catalog[i].sku == "SMALL_GREEN_BARREL"):
+        if(wholesale_catalog[i].potion_type == [1, 0, 0, 0] or [0, 1, 0, 0] or [0, 0, 1, 0]):
             if (wholesale_catalog[i].price + gold_count <= gold):
-                print("buying green barrel")
+                skus.append(wholesale_catalog[i].sku)
                 gold_count += wholesale_catalog[i].price
                 quant += 1
+                
 
-    if (quant > 0):
+    if ((quant > 0) and len(skus) > 0):
         to_add = {
-            "sku": "SMALL_GREEN_BARREL",
+            "sku": skus,
             "quantity": quant
         }
         return [
