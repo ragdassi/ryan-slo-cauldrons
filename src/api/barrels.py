@@ -31,16 +31,24 @@ def post_deliver_barrels(barrels_delivered: list[Barrel], order_id: int):
         for barrel in barrels_delivered:
             subtracted_gold = barrel.price * barrel.quantity
             added_ml = barrel.ml_per_barrel * barrel.quantity
-         
-            connection.execute(
-                sqlalchemy.text("UPDATE global_inventory SET gold = gold - :gold, green_ml = green_ml + :green_ml"),
-                {"gold": subtracted_gold, "millileters": added_ml})  # ML??
 
-    # result is whole table. 
+            # Green
+            if(barrel.potion_type == [0, 1, 0, 0]):
+                connection.execute(
+                    sqlalchemy.text("UPDATE global_inventory SET gold = gold - :gold, green_ml = green_ml + :green_ml"),
+                    {"gold": subtracted_gold, "green_ml": added_ml})  # ML??
+            # Red
+            if(barrel.potion_type == [1, 0, 0, 0]):
+                connection.execute(
+                    sqlalchemy.text("UPDATE global_inventory SET gold = gold - :gold, red_ml = red_ml + :red_ml"),
+                    {"gold": subtracted_gold, "red_ml": added_ml})  # ML??
+            # BLUE
+            if(barrel.potion_type == [0, 0, 1, 0]):
+                connection.execute(
+                    sqlalchemy.text("UPDATE global_inventory SET gold = gold - :gold, blue_ml = blue_ml + :blue_ml"),
+                    {"gold": subtracted_gold, "blue_ml": added_ml})  # ML??
 
-        #if result is good, rturn it
-        # subtract gold, add ml
-    
+        
     print(f"barrels delievered: {barrels_delivered} order_id: {order_id}")
 
     return "OK"
