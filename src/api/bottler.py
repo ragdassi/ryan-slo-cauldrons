@@ -73,7 +73,7 @@ def get_bottle_plan():
     output = []
     
     while (totalml > 0):
-        
+        # TODO - logic for checking if ml color is zero. why add if theres none of a particular color?
         output.append(
             {
                 "potion_type": [1, 0, 0, 0],

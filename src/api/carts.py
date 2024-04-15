@@ -93,6 +93,7 @@ def create_cart(new_cart: Customer):
     """ """
     # with db.engine.begin() as connection:
     #     result = connection.execute(sqlalchemy.text(sql_to_execute))
+    # customer gets back id
     global_cart_ids = 1
     return {"cart_id": 1}
 
@@ -106,6 +107,8 @@ def set_item_quantity(cart_id: int, item_sku: str, cart_item: CartItem):
     """ """
     # with db.engine.begin() as connection:
     #     result = connection.execute(sqlalchemy.text(sql_to_execute))
+
+    # add items to cart
     global_carts[global_cart_ids] = item_sku
 
     return "OK"
