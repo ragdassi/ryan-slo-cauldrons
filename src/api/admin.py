@@ -24,8 +24,8 @@ def reset():
         #set inventory back to 0
 
         # num potions back to 0
-        connection.execute(sqlalchemy.text("UPDATE global_inventory SET num_green_potions = :num_green_potions, num_blue_potions = :num_blue_potions, num_red_potions = :num_red_potions"),
-                    {"num_green_potions": 0, "num_blue_potions": 0, "num_red_potions": 0})
+        connection.execute(sqlalchemy.text("UPDATE global_inventory SET num_green_potions = :num_green_potions, num_blue_potions = :num_blue_potions, num_red_potions = :num_red_potions, num_potions = :num_potions"),
+                    {"num_green_potions": 0, "num_blue_potions": 0, "num_red_potions": 0, "num_potions": 0})
         
         # mls back to 0
         connection.execute(sqlalchemy.text("UPDATE global_inventory SET millileters = :millileters, green_ml = :green_ml, red_ml = :red_ml, blue_ml = :blue_ml"),
