@@ -2,6 +2,7 @@ from fastapi import APIRouter, Depends
 from pydantic import BaseModel
 from src.api import auth
 import math
+import sqlalchemy
 from src import database as db
 
 router = APIRouter(
@@ -14,11 +15,11 @@ router = APIRouter(
 def get_inventory():
     """ """
     with db.engine.begin() as connection:
-        greens = connection.execute( "SELECT num_green_potions FROM global_inventory").fetchone()[0] 
-        reds = connection.execute( "SELECT num_red_potions FROM global_inventory").fetchone()[0] 
-        blues = connection.execute( "SELECT num_blue_potions FROM global_inventory").fetchone()[0] 
-        totalmls = connection.execute( "SELECT millileters FROM global_inventory").fetchone()[0] 
-        gold = connection.execute( "SELECT gold FROM global_inventory").fetchone()[0] 
+        greens = connection.execute(sqlalchemy.text( "SELECT num_green_potions FROM global_inventory")).fetchone()[0] 
+        reds = connection.execute(sqlalchemy.text("SELECT num_red_potions FROM global_inventory")).fetchone()[0] 
+        blues = connection.execute(sqlalchemy.text("SELECT num_blue_potions FROM global_inventory")).fetchone()[0] 
+        totalmls = connection.execute(sqlalchemy.text("SELECT millileters FROM global_inventory")).fetchone()[0] 
+        gold = connection.execute(sqlalchemy.text("SELECT gold FROM global_inventory")).fetchone()[0] 
        
     totpotions = greens + reds + blues
     return {"number_of_potions": totpotions, "ml_in_barrels": totalmls, "gold": gold}
