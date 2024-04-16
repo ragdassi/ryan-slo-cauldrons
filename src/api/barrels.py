@@ -35,7 +35,7 @@ def post_deliver_barrels(barrels_delivered: list[Barrel], order_id: int):
             # Green
             if(barrel.potion_type == [0, 1, 0, 0]):
                 connection.execute(
-                    sqlalchemy.text("UPDATE global_inventory SET gold = gold - :gold, green_ml = green_ml + :green_ml,  millileters = millileters + :millileters"),
+                    sqlalchemy.text("UPDATE global_inventory SET gold = gold - :gold, green_ml = green_ml + :green_ml, millileters = millileters + :millileters"),
                     {"gold": subtracted_gold, "green_ml": added_ml, "millileters": added_ml})  # ML??
             # Red
             if(barrel.potion_type == [1, 0, 0, 0]):
