@@ -23,6 +23,17 @@ class Barrel(BaseModel):
 def post_deliver_barrels(barrels_delivered: list[Barrel], order_id: int):
     """ 
     only have one barrel over here 
+    based on order id, 
+
+    with db engine begin connection, try connection execute sqlalchemy(inser into processed (job id, type) VALUES (:order_id, 'barrels'), 
+    {"order_id": orderid})
+    execpt integrity error as e, return ok
+
+    ^ allows code to be retryable
+
+    sole job is in updating the DB
+
+
     """
     if len(barrels_delivered) != 1:
         return {"error": "Only one barrel can be delivered per order."}, 400
@@ -58,6 +69,10 @@ def post_deliver_barrels(barrels_delivered: list[Barrel], order_id: int):
 def get_wholesale_purchase_plan(wholesale_catalog: list[Barrel]):
     """ 
     loop through the barrels roxanne offering, only do accept if its green
+
+    find cheapest barrel to replensih stock - only do so if im past a threshold
+
+    else gold, potion_type, MAX_ML - currentml)
     """
     with db.engine.begin() as connection:
         gold = connection.execute(sqlalchemy.text("SELECT gold FROM global_inventory")).fetchone()[0] # tuple is size 1 

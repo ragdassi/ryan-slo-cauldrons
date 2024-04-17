@@ -61,49 +61,41 @@ def get_bottle_plan():
 
     # see how much ml we have in our global inventory
     with db.engine.begin() as connection:
-        totalml = connection.execute(sqlalchemy.text("SELECT millileters from global_inventory")).fetchone()[0] 
         redml = connection.execute(sqlalchemy.text("SELECT red_ml from global_inventory")).fetchone()[0] 
         greenml = connection.execute(sqlalchemy.text("SELECT green_ml from global_inventory")).fetchone()[0] 
         blueml = connection.execute(sqlalchemy.text("SELECT blue_ml from global_inventory")).fetchone()[0] 
     output = []
+
+    redpotions = redml // 100
+    greenpotions = greenml // 100
+    bluepotions = blueml // 100
+
+    print(redpotions, greenpotions, bluepotions)
     
-    while (totalml > 0):
-        # TODO - logic for checking if ml color is zero. why add if theres none of a particular color?
+    if (redpotions > 0):
+        # add a red
         output.append(
             {
                 "potion_type": [100, 0, 0, 0],
-                "quantity": 1,
+                "quantity": redpotions,
             }
         )
-        if (totalml - redml < 0):
-            break
-        else:
-            totalml -= redml
-        
-        output.append(
+    if (greenpotions > 0):
+         output.append(
             {
                 "potion_type": [0, 100, 0, 0],
-                "quantity": 1,
+                "quantity": greenpotions,
             }
         )
-        
-        if (totalml - greenml < 0):
-            break
-        else:
-            totalml -= greenml
-        
+    if (bluepotions > 0):
         output.append(
-            {
-                "potion_type": [0, 0, 100, 0],
-                "quantity": 1,
-            }
+                {
+                    "potion_type": [0, 0, 100, 0],
+                    "quantity": bluepotions,
+                }
         )
-        if (totalml - blueml < 0):
-            break
-        else:
-            totalml -= blueml
-    
 
+    print(output)
     return output
         
 
