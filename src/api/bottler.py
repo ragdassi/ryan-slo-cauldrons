@@ -23,13 +23,10 @@ def post_deliver_bottles(potions_delivered: list[PotionInventory], order_id: int
     """
     
     with db.engine.begin() as connection:
-        subtracted_ml = 0
-
-        # for potion in potions_delivered:
+    
         for i in range(len(potions_delivered)):
             added_potions = potions_delivered[i].quantity
             potion_type = potions_delivered[i].potion_type
-            # note = subtracting 100 ML per bottle
 
             # GREEN POTION
             if(potion_type == [0, 100, 0, 0]):

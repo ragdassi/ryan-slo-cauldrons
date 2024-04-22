@@ -18,11 +18,11 @@ def get_inventory():
         greens = connection.execute(sqlalchemy.text( "SELECT num_green_potions FROM global_inventory")).fetchone()[0] 
         reds = connection.execute(sqlalchemy.text("SELECT num_red_potions FROM global_inventory")).fetchone()[0] 
         blues = connection.execute(sqlalchemy.text("SELECT num_blue_potions FROM global_inventory")).fetchone()[0] 
-        totalmls = connection.execute(sqlalchemy.text("SELECT millileters FROM global_inventory")).fetchone()[0] 
+        
         gold = connection.execute(sqlalchemy.text("SELECT gold FROM global_inventory")).fetchone()[0] 
        
     totpotions = greens + reds + blues
-    return {"number_of_potions": totpotions, "ml_in_barrels": totalmls, "gold": gold}
+    return {"number_of_potions": totpotions, "gold": gold}
 
 # Gets called once a day
 @router.post("/plan")
