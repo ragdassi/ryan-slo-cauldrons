@@ -46,19 +46,22 @@ def post_deliver_barrels(barrels_delivered: list[Barrel], order_id: int):
             # Green
             if(barrel.potion_type == [0, 1, 0, 0]):
                 connection.execute(
-                    sqlalchemy.text("UPDATE global_inventory SET gold = gold - :gold, green_ml = green_ml + :green_ml, millileters = millileters + :millileters"),
-                    {"gold": subtracted_gold, "green_ml": added_ml, "millileters": added_ml})  # ML??
+                    sqlalchemy.text("UPDATE global_inventory SET gold = gold - :gold, green_ml = green_ml + :green_ml"),
+                    {"gold": subtracted_gold, "green_ml": added_ml})  # ML??
             # Red
             if(barrel.potion_type == [1, 0, 0, 0]):
                 connection.execute(
-                    sqlalchemy.text("UPDATE global_inventory SET gold = gold - :gold, red_ml = red_ml + :red_ml, millileters = millileters + :millileters"),
-                    {"gold": subtracted_gold, "red_ml": added_ml, "millileters": added_ml})  # ML??
+                    sqlalchemy.text("UPDATE global_inventory SET gold = gold - :gold, red_ml = red_ml + :red_ml"),
+                    {"gold": subtracted_gold, "red_ml": added_ml})  # ML??
             # BLUE
             if(barrel.potion_type == [0, 0, 1, 0]):
                 connection.execute(
-                    sqlalchemy.text("UPDATE global_inventory SET gold = gold - :gold, blue_ml = blue_ml + :blue_ml,  millileters = millileters + :millileters"),
-                    {"gold": subtracted_gold, "blue_ml": added_ml, "millileters": added_ml})  # ML??
-
+                    sqlalchemy.text("UPDATE global_inventory SET gold = gold - :gold, blue_ml = blue_ml + :blue_ml"),
+                    {"gold": subtracted_gold, "blue_ml": added_ml})  # ML??
+            if(barrel.potion_type == [0, 0, 0, 1]):
+                connection.execute(
+                    sqlalchemy.text("UPDATE global_inventory SET gold = gold - :gold, dark_ml = dark_ml + :dark_ml"),
+                    {"gold": subtracted_gold, "dark_ml": added_ml})  # ML??
         
     print(f"barrels delievered: {barrels_delivered} order_id: {order_id}")
 
@@ -80,7 +83,7 @@ def get_wholesale_purchase_plan(wholesale_catalog: list[Barrel]):
     quant = 0
     barrel_plan = []
     for i in range(len(wholesale_catalog)):
-        if(wholesale_catalog[i].potion_type == [1, 0, 0, 0] or [0, 1, 0, 0] or [0, 0, 1, 0]):
+        if(wholesale_catalog[i].potion_type == [1, 0, 0, 0] or [0, 1, 0, 0] or [0, 0, 1, 0] or [0, 0, 0, 1]):
             if (wholesale_catalog[i].price + gold_count <= gold):
                 quant += 1
                 barrel_plan.append({

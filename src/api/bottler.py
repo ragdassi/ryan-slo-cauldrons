@@ -31,18 +31,72 @@ def post_deliver_bottles(potions_delivered: list[PotionInventory], order_id: int
             potion_type = potions_delivered[i].potion_type
             # note = subtracting 100 ML per bottle
 
-            if(potion_type == [1, 0, 0, 0]):
-                connection.execute(sqlalchemy.text("UPDATE global_inventory SET red_ml = red_ml - :red_ml, num_potions = num_potions + :num_potions,  num_red_potions = num_red_potions + :num_red_potions, millileters = millileters - :millileters"),
-                {"red_ml": 100, "num_potions":added_potions, "num_red_potions": added_potions, "millileters": 100})
+            # GREEN POTION
+            if(potion_type == [0, 100, 0, 0]):
+                connection.execute(sqlalchemy.text("UPDATE global_inventory SET green_ml = green_ml - :green_ml, num_potions = num_potions + :num_potions"),
+                {"green_ml": 100, "num_potions":added_potions}) 
+
+                connection.execute(sqlalchemy.text("UPDATE potions SET quantity = quantity + :quantity WHERE sku = 'GREENPOTION'"),
+                {"quantity":added_potions})
+
+            # BLUE POTION
+            if(potion_type == [0, 0, 100, 0]):
+                connection.execute(sqlalchemy.text("UPDATE global_inventory SET blue_ml = blue_ml - :blue_ml, num_potions = num_potions + :num_potions"),
+                {"blue_ml": 100, "num_potions":added_potions})
+
+                connection.execute(sqlalchemy.text("UPDATE potions SET quantity = quantity + :quantity WHERE sku = 'BLUEPOTION'"),
+                {"quantity":added_potions})
             
-            if(potion_type == [0, 1, 0, 0]):
-                connection.execute(sqlalchemy.text("UPDATE global_inventory SET green_ml = green_ml - :green_ml, num_potions = num_potions + :num_potions,  num_green_potions = num_green_potions + :num_green_potions, millileters = millileters - :millileters"),
-                {"green_ml": 100, "num_potions":added_potions, "num_green_potions": added_potions, "millileters": 100}) 
+            # RED POTION
+            if(potion_type == [100, 0, 0, 0]):
+                connection.execute(sqlalchemy.text("UPDATE global_inventory SET red_ml = red_ml - :red_ml, num_potions = num_potions + :num_potions"),
+                {"red_ml": 100, "num_potions":added_potions,})
+
+                connection.execute(sqlalchemy.text("UPDATE potions SET quantity = quantity + :quantity WHERE sku = 'REDPOTION'"),
+                {"quantity":added_potions})
             
-            if(potion_type == [0, 0, 1, 0]):
-                connection.execute(sqlalchemy.text("UPDATE global_inventory SET blue_ml = blue_ml - :blue_ml, num_potions = num_potions + :num_potions,  num_blue_potions = num_blue_potions + :num_blue_potions, millileters = millileters - :millileters"),
-                {"blue_ml": 100, "num_potions":added_potions, "num_blue_potions": added_potions, "millileters": 100})
-                
+
+            # DARK POTION
+            if(potion_type == [0, 0, 0, 100]):
+                connection.execute(sqlalchemy.text("UPDATE global_inventory SET dark_ml = dark_ml - :dark_ml, num_potions = num_potions + :num_potions"),
+                {"dark_ml": 100, "num_potions":added_potions})
+
+                connection.execute(sqlalchemy.text("UPDATE potions SET quantity = quantity + :quantity WHERE sku = 'DARKPOTION'"),
+                {"quantity":added_potions})
+
+            # PURPLE POTION
+            if(potion_type == [50, 0, 50, 0]):
+                connection.execute(sqlalchemy.text("UPDATE global_inventory SET red_ml = red_ml - :red_ml, blue_ml = blue_ml - :blue_ml, num_potions = num_potions + :num_potions"),
+                {"red_ml": 50, "blue_ml": 50, "num_potions": added_potions})
+
+                connection.execute(sqlalchemy.text("UPDATE potions SET quantity = quantity + :quantity WHERE sku = 'PURPLEPOTION'"),
+                {"quantity":added_potions})
+            
+            # BROWN POTION
+            if(potion_type == [50, 50, 0, 0]):
+                connection.execute(sqlalchemy.text("UPDATE global_inventory SET red_ml = red_ml - :red_ml, green_ml = green_ml - :green_ml, num_potions = num_potions + :num_potions"),
+                {"red_ml": 50, "green_ml": 50, "num_potions": added_potions})
+
+                connection.execute(sqlalchemy.text("UPDATE potions SET quantity = quantity + :quantity WHERE sku = 'BROWNPOTION'"),
+                {"quantity":added_potions})
+            
+            # TURQOISE POTION
+            if(potion_type == [0, 50, 50, 0]):
+                connection.execute(sqlalchemy.text("UPDATE global_inventory SET blue_ml = blue_ml - :blue_ml, green_ml = green_ml - :green_ml, num_potions = num_potions + :num_potions"),
+                {"blue_ml": 50, "green_ml": 50, "num_potions": added_potions})
+
+                connection.execute(sqlalchemy.text("UPDATE potions SET quantity = quantity + :quantity WHERE sku = 'TURQUOISEPOTION'"),
+                {"quantity":added_potions})
+
+            # BLOOD POTION
+            if(potion_type == [50, 0, 0, 50]):
+                connection.execute(sqlalchemy.text("UPDATE global_inventory SET red_ml = red_ml - :red_ml, dark_ml = dark_ml - :dark_ml, num_potions = num_potions + :num_potions"),
+                {"red_ml": 50, "dark_ml": 50, "num_potions": added_potions})
+
+                connection.execute(sqlalchemy.text("UPDATE potions SET quantity = quantity + :quantity WHERE sku = 'BLOODPOTION'"),
+                {"quantity":added_potions})
+
+
     print(f"potions delievered: {potions_delivered} order_id: {order_id}")
 
     return "OK"
@@ -64,19 +118,21 @@ def get_bottle_plan():
         redml = connection.execute(sqlalchemy.text("SELECT red_ml from global_inventory")).fetchone()[0] 
         greenml = connection.execute(sqlalchemy.text("SELECT green_ml from global_inventory")).fetchone()[0] 
         blueml = connection.execute(sqlalchemy.text("SELECT blue_ml from global_inventory")).fetchone()[0] 
+        darkml = connection.execute(sqlalchemy.text("SELECT dark_ml from global_inventory")).fetchone()[0] 
     output = []
 
     redpotions = redml // 100
     greenpotions = greenml // 100
     bluepotions = blueml // 100
+    darkpotions = darkml // 100
 
-    print(redpotions, greenpotions, bluepotions)
+    print(redpotions, greenpotions, bluepotions, darkpotions)
     
-    if (redpotions > 0):
+    if (redpotions > 0 and bluepotions > 0):
         # add a red
         output.append(
             {
-                "potion_type": [100, 0, 0, 0],
+                "potion_type": [50, 0, 50, 0],
                 "quantity": redpotions,
             }
         )
