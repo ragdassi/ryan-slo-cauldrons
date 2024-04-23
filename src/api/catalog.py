@@ -15,7 +15,7 @@ def get_catalog():
     """
     catalog = []
     with db.engine.begin() as connection:
-        result = connection.execute(sqlalchemy.text("SELECT quantity, sku, red, green, blue, dark, price from potions")).all()
+        result = connection.execute(sqlalchemy.text("SELECT quantity, sku, red, green, blue, dark, price FROM potions WHERE quantity > 0")).all()
 
         for row in result:
             catalog.append({"sku": row.sku, "quantity": row.quantity, "red": row.red, "green": row.green, "blue": row.blue, "dark": row.dark, "price": row.price})
