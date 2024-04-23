@@ -13,23 +13,13 @@ def get_catalog():
 
     fetch - get row, get numbering potions variable. if > 0, make it 1 just for now. return hard coded data.  
     """
-    catalogs = []
+    catalog = []
     with db.engine.begin() as connection:
-        result = connection.execute(sqlalchemy.text("SELECT * FROM global_inventory")).fetchone()
+        result = connection.execute(sqlalchemy.text("SELECT inventory, sku, type, price from potion_catalog")).all()
+
+        for row in result:
+            catalog.append({"sku": row.sku, "quantity": row.inventory, "potion_type": row.type, "price": row.price})
     
-        if result[0] > 0:
-            return [
-            {
-                "sku": "GREEN_POTION_0",
-                "name": "green potion",
-                "quantity": 1,
-                "price": 50,
-                "potion_type": [0, 1, 0, 0],
-            }
-        ]
-        else:
-            return []
-    
-   
+    return catalog
 
     
