@@ -15,10 +15,10 @@ def get_catalog():
     """
     catalog = []
     with db.engine.begin() as connection:
-        result = connection.execute(sqlalchemy.text("SELECT inventory, sku, type, price from potion_catalog")).all()
+        result = connection.execute(sqlalchemy.text("SELECT sku, quantity, price from potions")).all()
 
         for row in result:
-            catalog.append({"sku": row.sku, "quantity": row.inventory, "potion_type": row.type, "price": row.price})
+            catalog.append({"sku": row.sku, "quantity": row.quantity, "price": row.price})
     
     return catalog
 
