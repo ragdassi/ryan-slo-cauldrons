@@ -82,10 +82,11 @@ def post_visits(visit_id: int, customers: list[Customer]):
     
     print(customers)
     with db.engine.begin() as connection:
-        customers_db = connection.execute(sqlalchemy.text("SELECT customer_id from carts")).fetchall()
+        customers_db = connection.execute(sqlalchemy.text("SELECT customer_name from carts")).fetchall()
         
-    print(customers_db)
-    return "OK"
+        customer_names = [customer.customer_name for customer in customers_db]
+    print(customer_names)
+    return customer_names
 
 
 @router.post("/")
@@ -93,11 +94,19 @@ def create_cart(new_cart: Customer):
     """ """
     with db.engine.begin() as connection:
         res = connection.execute(
-            sqlalchemy.text("INSERT INTO carts (customer_id) VALUES (:customer_id)"),
-            {"customer_id": new_cart.customer_name}
+            sqlalchemy.text("INSERT INTO carts (customer_name, character_class, level) "
+                            "VALUES (:customer_name, :character_class, :level) RETURNING id"),
+            {"customer_name": new_cart.customer_name, "character_class": new_cart.character_class, "level": new_cart.level}
         )
-    # should I add more customer fields to cart table?
-    return {"customer": new_cart.customer_name}
+    
+        row = res.fetchone()
+        
+        # Check if the row is not None and return the ID
+
+        if row:
+            return row[0]
+        else:
+            return None
 
 
 class CartItem(BaseModel):
@@ -112,11 +121,12 @@ def set_item_quantity(cart_id: int, item_sku: str, cart_item: CartItem):
             sqlalchemy.text("UPDATE cart_items SET item_quantity = :item_quantity WHERE item_sku = :item_sku"), 
             {"item_quantity": cart_item.quantity, "item_sku": item_sku})
 
-    # add items to cart
-    
-    print(result)
+    if result.rowcount > 0:
+        return True
+    else:
+        return False
 
-    return "OK"
+  
 
 
 class CartCheckout(BaseModel):
@@ -142,9 +152,11 @@ def checkout(cart_id: int, cart_checkout: CartCheckout):
 
         # Subtract potions
         connection.execute(
-            sqlalchemy.text("UPDATE global_inventory SET num_potions = num_potions - :num_potions"),
-            {"num_potions": total_potions_bought}
+            sqlalchemy.text("UPDATE potions SET quantity = quantity - :quantity WHERE sku = :sku"),
+            {"quantity": total_potions_bought, "sku": item.item_sku}
         )
+        print(total_potions_bought, item.item_skul)
+
         # Add gold
         connection.execute(
             sqlalchemy.text("UPDATE global_inventory SET gold = gold + :gold"),

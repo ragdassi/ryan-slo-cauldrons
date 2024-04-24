@@ -34,7 +34,7 @@ def reset():
 
         # mls back to 0
         connection.execute(sqlalchemy.text("UPDATE global_inventory SET green_ml = :green_ml, red_ml = :red_ml, blue_ml = :blue_ml, dark_ml = :dark_ml"),
-                    {"millileters": 0, "green_ml": 0, "red_ml": 0,  "blue_ml": 0, "dark_ml": 0})
+                    {"green_ml": 0, "red_ml": 0,  "blue_ml": 0, "dark_ml": 0})
         
     return "OK"
 
