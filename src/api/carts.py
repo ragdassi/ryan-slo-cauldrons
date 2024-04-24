@@ -155,7 +155,7 @@ def checkout(cart_id: int, cart_checkout: CartCheckout):
             sqlalchemy.text("UPDATE potions SET quantity = quantity - :quantity WHERE sku = :sku"),
             {"quantity": total_potions_bought, "sku": item.item_sku}
         )
-        print(total_potions_bought, item.item_skul)
+        print(total_potions_bought, item.item_sku)
 
         # Add gold
         connection.execute(
