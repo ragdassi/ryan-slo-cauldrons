@@ -93,20 +93,17 @@ def post_visits(visit_id: int, customers: list[Customer]):
 def create_cart(new_cart: Customer):
     """ """
     with db.engine.begin() as connection:
-        res = connection.execute(
+        cart_id = connection.execute(
             sqlalchemy.text("INSERT INTO carts (customer_name, character_class, level) "
                             "VALUES (:customer_name, :character_class, :level) RETURNING id"),
             {"customer_name": new_cart.customer_name, "character_class": new_cart.character_class, "level": new_cart.level}
-        )
+        ).scalar_one()
     
-        row = res.fetchone()
         
         # Check if the row is not None and return the ID
 
-        if row:
-            return row[0]
-        else:
-            return None
+        print(f"creating cart for {new_cart.customer_name} with id {cart_id}")
+        return cart_id
 
 
 class CartItem(BaseModel):
