@@ -115,11 +115,13 @@ class CartItem(BaseModel):
 def set_item_quantity(cart_id: int, item_sku: str, cart_item: CartItem):
     """ """
     with db.engine.begin() as connection:
-        result = connection.execute(
-            sqlalchemy.text("UPDATE cart_items SET item_quantity = :item_quantity WHERE item_sku = :item_sku"), 
-            {"item_quantity": cart_item.quantity, "item_sku": item_sku})
+        item_id = connection.execute(
+            sqlalchemy.text("INSERT INTO cart_items (cart_id, item_sku, item_quantity) "
+                            "VALUES (:cart_id, :item_sku, :item_quantity) RETURNING item_id"),
+            {"cart_id": cart_id, "item_sku": item_sku, "item_quantity": cart_item.quantity}
+        ).scalar_one()
 
-    if result.rowcount > 0:
+    if(item_id):
         return True
     else:
         return False
@@ -144,7 +146,6 @@ def checkout(cart_id: int, cart_checkout: CartCheckout):
             # Assuming each item in the cart has a price in gold and quantity
             total_gold_paid += item.item_quantity * item.item_price
             total_potions_bought += item.item_quantity
-
 
             # Subtract potions
             connection.execute(
