@@ -103,7 +103,8 @@ def create_cart(new_cart: Customer):
         # Check if the row is not None and return the ID
 
         print(f"creating cart for {new_cart.customer_name} with id {cart_id}")
-        return cart_id
+
+        return {"cart_id": cart_id}
 
 
 class CartItem(BaseModel):
@@ -122,8 +123,6 @@ def set_item_quantity(cart_id: int, item_sku: str, cart_item: CartItem):
         return True
     else:
         return False
-
-  
 
 
 class CartCheckout(BaseModel):
