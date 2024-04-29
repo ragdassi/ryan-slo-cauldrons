@@ -61,7 +61,6 @@ def post_deliver_barrels(barrels_delivered: list[Barrel], order_id: int):
                     {"green_ml": (added_ml)}
                 )
             
-            
             # Red
             if(barrel.potion_type == [1, 0, 0, 0]):
                 connection.execute(
@@ -128,9 +127,10 @@ def get_wholesale_purchase_plan(wholesale_catalog: list[Barrel]):
     else gold, potion_type, MAX_ML - currentml)
     """
 
-    
+
     with db.engine.begin() as connection:
-        gold = connection.execute(sqlalchemy.text("SELECT gold FROM global_inventory")).fetchone()[0] # tuple is size 1 
+        gold = connection.execute(sqlalchemy.text("SELECT SUM(change) AS gold FROM gold_ledgers")).fetchone()[0]
+        print(gold)
     gold_count = 0
     quant = 0
     barrel_plan = []

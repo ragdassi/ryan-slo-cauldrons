@@ -15,7 +15,7 @@ router = APIRouter(
 def get_inventory():
     """ """
     with db.engine.begin() as connection:
-        greenml = connection.execute(sqlalchemy.text( "SELECT green_ml FROM global_inventory")).fetchone()[0] 
+        greenml = connection.execute(sqlalchemy.text("SELECT green_ml FROM global_inventory")).fetchone()[0] 
         redml = connection.execute(sqlalchemy.text("SELECT red_ml FROM global_inventory")).fetchone()[0] 
         blueml = connection.execute(sqlalchemy.text("SELECT blue_ml FROM global_inventory")).fetchone()[0] 
         darkml = connection.execute(sqlalchemy.text("SELECT dark_ml FROM global_inventory")).fetchone()[0] 
