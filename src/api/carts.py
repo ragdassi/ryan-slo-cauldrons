@@ -154,6 +154,7 @@ def checkout(cart_id: int, cart_checkout: CartCheckout):
                 sqlalchemy.text("UPDATE potions SET quantity = quantity - :quantity WHERE sku = :sku"),
                 {"quantity": total_potions_bought, "sku": item.item_sku}
             )
+            ###LEDGER
             row = connection.execute(
                 sqlalchemy.text("SELECT price from potions WHERE sku = :sku"),
                 {"sku": item.item_sku}
@@ -162,7 +163,6 @@ def checkout(cart_id: int, cart_checkout: CartCheckout):
             price = row.price
             total_gold_paid += item.item_quantity * price
 
-        
             print(total_potions_bought, total_gold_paid, item.item_sku)
 
         # Add gold
@@ -170,5 +170,6 @@ def checkout(cart_id: int, cart_checkout: CartCheckout):
             sqlalchemy.text("UPDATE global_inventory SET gold = gold + :gold"),
             {"gold": total_gold_paid}
         )
+        ##LEDGER
 
     return {"total_potions_bought": total_potions_bought, "total_gold_paid": total_gold_paid}

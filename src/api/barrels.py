@@ -2,6 +2,8 @@ from fastapi import APIRouter, Depends
 from pydantic import BaseModel
 from src.api import auth
 import sqlalchemy
+from sqlalchemy.sql import func
+from sqlalchemy import text
 from src import database as db
 
 router = APIRouter(
@@ -48,20 +50,68 @@ def post_deliver_barrels(barrels_delivered: list[Barrel], order_id: int):
                 connection.execute(
                     sqlalchemy.text("UPDATE global_inventory SET gold = gold - :gold, green_ml = green_ml + :green_ml"),
                     {"gold": subtracted_gold, "green_ml": added_ml})  # ML??
+             ###LEDGER
+                connection.execute(
+                    sqlalchemy.text("INSERT INTO gold_ledgers (change) VALUES (:change)"),
+                    {"change": -(subtracted_gold)}
+                )
+                ###LEDGER
+                connection.execute(
+                    sqlalchemy.text("INSERT INTO ml_ledgers (green_ml) VALUES (:green_ml)"),
+                    {"green_ml": (added_ml)}
+                )
+            
+            
             # Red
             if(barrel.potion_type == [1, 0, 0, 0]):
                 connection.execute(
                     sqlalchemy.text("UPDATE global_inventory SET gold = gold - :gold, red_ml = red_ml + :red_ml"),
                     {"gold": subtracted_gold, "red_ml": added_ml})  # ML??
+
+                ###LEDGER
+                connection.execute(
+                        sqlalchemy.text("INSERT INTO gold_ledgers (change) VALUES (:change)"),
+                        {"change": -(subtracted_gold)}
+                    )
+                ###LEDGER
+                connection.execute(
+                    sqlalchemy.text("INSERT INTO ml_ledgers (red_ml) VALUES (:red_ml)"),
+                    {"red_ml": (added_ml)}
+                )
+
+            
             # BLUE
             if(barrel.potion_type == [0, 0, 1, 0]):
                 connection.execute(
-                    sqlalchemy.text("UPDATE global_inventory SET gold = gold - :gold, blue_ml = blue_ml + :blue_ml"),
-                    {"gold": subtracted_gold, "blue_ml": added_ml})  # ML??
+                    text("UPDATE global_inventory SET gold = gold - :gold, blue_ml = blue_ml + :blue_ml"),
+                    {"gold": subtracted_gold, "blue_ml": added_ml})
+                ###LEDGER
+                connection.execute(
+                    sqlalchemy.text("INSERT INTO gold_ledgers (change) VALUES (:change)"),
+                    {"change": -(subtracted_gold)}
+                )
+                ###LEDGER
+                connection.execute(
+                    sqlalchemy.text("INSERT INTO ml_ledgers (blue_ml) VALUES (:blue_ml)"),
+                    {"blue_ml": (added_ml)}
+                )
+            
+            
+            #DARK
             if(barrel.potion_type == [0, 0, 0, 1]):
                 connection.execute(
-                    sqlalchemy.text("UPDATE global_inventory SET gold = gold - :gold, dark_ml = dark_ml + :dark_ml"),
-                    {"gold": subtracted_gold, "dark_ml": added_ml})  # ML??
+                    text("UPDATE global_inventory SET gold = gold - :gold, dark_ml = dark_ml + :dark_ml"),
+                    {"gold": subtracted_gold, "dark_ml": added_ml}) 
+                ###LEDGER
+                connection.execute(
+                    sqlalchemy.text("INSERT INTO gold_ledgers (change) VALUES (:change)"),
+                    {"change": -(subtracted_gold)}
+                )
+                ###LEDGER
+                connection.execute(
+                    sqlalchemy.text("INSERT INTO ml_ledgers (dark_ml) VALUES (:dark_ml)"),
+                    {"dark_ml": (added_ml)}
+                )
         
     print(f"barrels delievered: {barrels_delivered} order_id: {order_id}")
 

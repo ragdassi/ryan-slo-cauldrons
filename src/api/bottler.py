@@ -40,22 +40,48 @@ def post_deliver_bottles(potions_delivered: list[PotionInventory], order_id: int
                 if (potion_type[0] > 0):
                     connection.execute(sqlalchemy.text("UPDATE global_inventory SET red_ml = red_ml - :red_ml"),
                     {"red_ml": potion_type[0]})
+
+                    ###LEDGER
+                    connection.execute(sqlalchemy.text("INSERT INTO ml_ledgers (red_ml) VALUES (:red_ml)"),
+                    {"red_ml": -(potion_type[0])}
+                    )
                 
                 if (potion_type[1] > 0):
                     connection.execute(sqlalchemy.text("UPDATE global_inventory SET green_ml = green_ml - :green_ml"),
                     {"green_ml": potion_type[1]})
+                    
+                    ###LEDGER
+                    connection.execute(sqlalchemy.text("INSERT INTO ml_ledgers (green_ml) VALUES (:green_ml)"),
+                    {"green_ml": -(potion_type[1])}
+                    )
 
                 if (potion_type[2] > 0):
                     connection.execute(sqlalchemy.text("UPDATE global_inventory SET blue_ml = blue_ml - :blue_ml"),
                     {"blue_ml": potion_type[2]})
 
+                    ###LEDGER
+                    connection.execute(sqlalchemy.text("INSERT INTO ml_ledgers (blue_ml) VALUES (:blue_ml)"),
+                    {"blue_ml": -(potion_type[2])}
+                    )
+
+
                 if (potion_type[3] > 0):
                     connection.execute(sqlalchemy.text("UPDATE global_inventory SET dark_ml = dark_ml - :dark_ml"),
-                    {"dark_ml": potion_type[3]})
+                    {"dark_ml": -(potion_type[3])})
+
+                    ###LEDGER
+                    connection.execute(sqlalchemy.text("INSERT INTO ml_ledgers (dark_ml) VALUES (:dark_ml)"),
+                    {"dark_ml": -(potion_type[3])}
+                    )
 
                 # Update quantity for correct SKU! 
                 connection.execute(sqlalchemy.text("UPDATE potions SET quantity = quantity + :quantity WHERE sku = :sku"),
                     {"quantity":added_potions, "sku": sku})
+
+               ###LEDGER
+                connection.execute(sqlalchemy.text("INSERT INTO potions_ledger (change) VALUES (:change)"),
+                    {"change": (added_potions)}
+                    )
 
 
     print(f"potions delievered: {potions_delivered} order_id: {order_id}")
@@ -82,6 +108,8 @@ def get_bottle_plan():
         darkml = connection.execute(sqlalchemy.text("SELECT dark_ml from global_inventory")).fetchone()[0] 
     
         potions = connection.execute(sqlalchemy.text("SELECT * from potions"))
+
+        # eventually, sum up cols
 
         
         output = []
