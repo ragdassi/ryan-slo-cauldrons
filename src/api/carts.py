@@ -144,7 +144,6 @@ def checkout(cart_id: int, cart_checkout: CartCheckout):
 
         for item in cart_items:
             
-
             # Assuming each item in the cart has a price in gold and quantity
     
             total_potions_bought += item.item_quantity

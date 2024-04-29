@@ -79,7 +79,7 @@ def post_deliver_bottles(potions_delivered: list[PotionInventory], order_id: int
                     {"quantity":added_potions, "sku": sku})
 
                ###LEDGER
-                connection.execute(sqlalchemy.text("INSERT INTO potions_ledger (change) VALUES (:change)"),
+                connection.execute(sqlalchemy.text("INSERT INTO potion_ledgers (change) VALUES (:change)"),
                     {"change": (added_potions)}
                     )
 
