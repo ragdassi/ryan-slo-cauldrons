@@ -143,8 +143,10 @@ def checkout(cart_id: int, cart_checkout: CartCheckout):
         total_potions_bought = 0
 
         for item in cart_items:
+            
+
             # Assuming each item in the cart has a price in gold and quantity
-            total_gold_paid += item.item_quantity * item.item_price
+    
             total_potions_bought += item.item_quantity
 
             # Subtract potions
@@ -152,7 +154,16 @@ def checkout(cart_id: int, cart_checkout: CartCheckout):
                 sqlalchemy.text("UPDATE potions SET quantity = quantity - :quantity WHERE sku = :sku"),
                 {"quantity": total_potions_bought, "sku": item.item_sku}
             )
-            print(total_potions_bought, item.item_sku)
+            row = connection.execute(
+                sqlalchemy.text("SELECT price from potions WHERE sku = :sku"),
+                {"sku": item.item_sku}
+            ).fetchone()
+
+            price = row.price
+            total_gold_paid += item.item_quantity * price
+
+        
+            print(total_potions_bought, total_gold_paid, item.item_sku)
 
         # Add gold
         connection.execute(
