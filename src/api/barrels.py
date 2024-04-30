@@ -47,9 +47,7 @@ def post_deliver_barrels(barrels_delivered: list[Barrel], order_id: int):
 
             # Green
             if(barrel.potion_type == [0, 1, 0, 0]):
-                connection.execute(
-                    sqlalchemy.text("UPDATE global_inventory SET gold = gold - :gold, green_ml = green_ml + :green_ml"),
-                    {"gold": subtracted_gold, "green_ml": added_ml})  # ML??
+                
              ###LEDGER
                 connection.execute(
                     sqlalchemy.text("INSERT INTO gold_ledgers (change) VALUES (:change)"),
@@ -63,10 +61,7 @@ def post_deliver_barrels(barrels_delivered: list[Barrel], order_id: int):
             
             # Red
             if(barrel.potion_type == [1, 0, 0, 0]):
-                connection.execute(
-                    sqlalchemy.text("UPDATE global_inventory SET gold = gold - :gold, red_ml = red_ml + :red_ml"),
-                    {"gold": subtracted_gold, "red_ml": added_ml})  # ML??
-
+              
                 ###LEDGER
                 connection.execute(
                         sqlalchemy.text("INSERT INTO gold_ledgers (change) VALUES (:change)"),
@@ -81,9 +76,7 @@ def post_deliver_barrels(barrels_delivered: list[Barrel], order_id: int):
             
             # BLUE
             if(barrel.potion_type == [0, 0, 1, 0]):
-                connection.execute(
-                    text("UPDATE global_inventory SET gold = gold - :gold, blue_ml = blue_ml + :blue_ml"),
-                    {"gold": subtracted_gold, "blue_ml": added_ml})
+               
                 ###LEDGER
                 connection.execute(
                     sqlalchemy.text("INSERT INTO gold_ledgers (change) VALUES (:change)"),
@@ -95,12 +88,9 @@ def post_deliver_barrels(barrels_delivered: list[Barrel], order_id: int):
                     {"blue_ml": (added_ml)}
                 )
             
-            
             #DARK
             if(barrel.potion_type == [0, 0, 0, 1]):
-                connection.execute(
-                    text("UPDATE global_inventory SET gold = gold - :gold, dark_ml = dark_ml + :dark_ml"),
-                    {"gold": subtracted_gold, "dark_ml": added_ml}) 
+    
                 ###LEDGER
                 connection.execute(
                     sqlalchemy.text("INSERT INTO gold_ledgers (change) VALUES (:change)"),
