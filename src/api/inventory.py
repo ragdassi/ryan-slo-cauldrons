@@ -15,19 +15,20 @@ router = APIRouter(
 def get_inventory():
     """ """
     with db.engine.begin() as connection:
-        greenml = connection.execute(sqlalchemy.text("SELECT green_ml FROM global_inventory")).fetchone()[0] 
-        redml = connection.execute(sqlalchemy.text("SELECT red_ml FROM global_inventory")).fetchone()[0] 
-        blueml = connection.execute(sqlalchemy.text("SELECT blue_ml FROM global_inventory")).fetchone()[0] 
-        darkml = connection.execute(sqlalchemy.text("SELECT dark_ml FROM global_inventory")).fetchone()[0] 
+        greenml = connection.execute(sqlalchemy.text("SELECT SUM(green_ml) AS green_ml FROM ml_ledgers")).fetchone()[0] 
+        redml = connection.execute(sqlalchemy.text("SELECT SUM(red_ml) AS red_ml FROM ml_ledgers")).fetchone()[0] 
+        blueml = connection.execute(sqlalchemy.text("SELECT SUM(blue_ml) AS blue_ml FROM ml_ledgers")).fetchone()[0] 
+        darkml = connection.execute(sqlalchemy.text("SELECT SUM(dark_ml) AS dark_ml FROM ml_ledgers")).fetchone()[0] 
         
-        gold = connection.execute(sqlalchemy.text("SELECT gold FROM global_inventory")).fetchone()[0] 
+        #gold = connection.execute(sqlalchemy.text("SELECT gold FROM global_inventory")).fetchone()[0] 
+        gold_sum_result = connection.execute(sqlalchemy.text("SELECT SUM(change) AS gold FROM gold_ledgers")).fetchone()[0]
         
         sum = connection.execute(sqlalchemy.text("SELECT SUM(quantity) AS total_quantity FROM potions")).fetchone()  
         total_quantity = sum[0]
         
     total_ml = greenml + redml + blueml + darkml
 
-    return {"gold": gold, "Number of potions": total_quantity, "total_millileters": total_ml}
+    return {"gold": gold_sum_result, "Number of potions": total_quantity, "total_millileters": total_ml}
 
 # Gets called once a day
 @router.post("/plan")

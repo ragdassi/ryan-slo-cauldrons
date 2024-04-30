@@ -36,39 +36,27 @@ def post_deliver_bottles(potions_delivered: list[PotionInventory], order_id: int
 
             if (row):
                 sku = row[1]
-                # Updating MLs
+                potion_id = row.id
+                
                 if (potion_type[0] > 0):
-                    connection.execute(sqlalchemy.text("UPDATE global_inventory SET red_ml = red_ml - :red_ml"),
-                    {"red_ml": potion_type[0]})
-
                     ###LEDGER
                     connection.execute(sqlalchemy.text("INSERT INTO ml_ledgers (red_ml) VALUES (:red_ml)"),
                     {"red_ml": -(potion_type[0])}
                     )
                 
                 if (potion_type[1] > 0):
-                    connection.execute(sqlalchemy.text("UPDATE global_inventory SET green_ml = green_ml - :green_ml"),
-                    {"green_ml": potion_type[1]})
-                    
                     ###LEDGER
                     connection.execute(sqlalchemy.text("INSERT INTO ml_ledgers (green_ml) VALUES (:green_ml)"),
                     {"green_ml": -(potion_type[1])}
                     )
 
                 if (potion_type[2] > 0):
-                    connection.execute(sqlalchemy.text("UPDATE global_inventory SET blue_ml = blue_ml - :blue_ml"),
-                    {"blue_ml": potion_type[2]})
-
                     ###LEDGER
                     connection.execute(sqlalchemy.text("INSERT INTO ml_ledgers (blue_ml) VALUES (:blue_ml)"),
                     {"blue_ml": -(potion_type[2])}
                     )
 
-
                 if (potion_type[3] > 0):
-                    connection.execute(sqlalchemy.text("UPDATE global_inventory SET dark_ml = dark_ml - :dark_ml"),
-                    {"dark_ml": -(potion_type[3])})
-
                     ###LEDGER
                     connection.execute(sqlalchemy.text("INSERT INTO ml_ledgers (dark_ml) VALUES (:dark_ml)"),
                     {"dark_ml": -(potion_type[3])}
@@ -78,9 +66,9 @@ def post_deliver_bottles(potions_delivered: list[PotionInventory], order_id: int
                 connection.execute(sqlalchemy.text("UPDATE potions SET quantity = quantity + :quantity WHERE sku = :sku"),
                     {"quantity":added_potions, "sku": sku})
 
-               ###LEDGER
-                connection.execute(sqlalchemy.text("INSERT INTO potion_ledgers (change) VALUES (:change)"),
-                    {"change": (added_potions)}
+               ###LEDGER -- note, I will eventually not need endpoint above because I can SUM all deltas in potions_ledgers where id is potion_id
+                connection.execute(sqlalchemy.text("INSERT INTO potion_ledgers (potion_id, change) VALUES (:potion_id, :change)"),
+                    {"potion_id": potion_id, "change": (added_potions)}
                     )
 
 
@@ -102,16 +90,15 @@ def get_bottle_plan():
 
     # see how much ml we have in our global inventory
     with db.engine.begin() as connection:
-        redml = connection.execute(sqlalchemy.text("SELECT red_ml from global_inventory")).fetchone()[0] 
-        greenml = connection.execute(sqlalchemy.text("SELECT green_ml from global_inventory")).fetchone()[0] 
-        blueml = connection.execute(sqlalchemy.text("SELECT blue_ml from global_inventory")).fetchone()[0] 
-        darkml = connection.execute(sqlalchemy.text("SELECT dark_ml from global_inventory")).fetchone()[0] 
+        redml = connection.execute(sqlalchemy.text("SELECT SUM(red_ml) AS red_ml FROM ml_ledgers")).fetchone()[0] 
+        greenml = connection.execute(sqlalchemy.text("SELECT SUM(green_ml) AS green_ml FROM ml_ledgers")).fetchone()[0] 
+        blueml = connection.execute(sqlalchemy.text("SELECT SUM(blue_ml) AS blue_ml FROM ml_ledgers")).fetchone()[0] 
+        darkml = connection.execute(sqlalchemy.text("SELECT SUM(dark_ml) AS dark_ml FROM ml_ledgers")).fetchone()[0] 
     
         potions = connection.execute(sqlalchemy.text("SELECT * from potions"))
 
         # eventually, sum up cols
 
-        
         output = []
 
         for potion in potions:
