@@ -19,22 +19,21 @@ def reset():
 
     with db.engine.begin() as connection:
         # Set gold back to 100
-        connection.execute(sqlalchemy.text("UPDATE global_inventory SET gold = :gold"),
-                    {"gold": 100})
-        #set inventory back to 0
-
-        # num potions back to 0
-        # connection.execute(sqlalchemy.text("UPDATE global_inventory SET num_green_potions = :num_green_potions, num_blue_potions = :num_blue_potions, num_red_potions = :num_red_potions, num_potions = :num_potions"),
-        #             {"num_green_potions": 0, "num_blue_potions": 0, "num_red_potions": 0, "num_potions": 0})
-        
-        # NOW IN POTIONS TABLE:
-
-        connection.execute(sqlalchemy.text("UPDATE potions SET quantity = 0"))
-
-
+        goldcount = connection.execute(sqlalchemy.text("SELECT SUM(change) AS gold FROM gold_ledgers")).fetchone()[0]
+        if (goldcount > 0):
+            connection.execute(
+                    sqlalchemy.text("INSERT INTO gold_ledgers (change) VALUES (:change)"),
+                    {"change": -(goldcount)})
+        if(goldcount < 0):
+            connection.execute(
+                    sqlalchemy.text("INSERT INTO gold_ledgers (change) VALUES (:change)"),
+                    {"change": (goldcount)})
+                
+        # setting all potion_ledgers to 0
+        connection.execute(sqlalchemy.text("UPDATE potion_ledgers SET change = 0"))
         # mls back to 0
-        connection.execute(sqlalchemy.text("UPDATE global_inventory SET green_ml = :green_ml, red_ml = :red_ml, blue_ml = :blue_ml, dark_ml = :dark_ml"),
-                    {"green_ml": 0, "red_ml": 0,  "blue_ml": 0, "dark_ml": 0})
+
+        connection.execute(sqlalchemy.text("UPDATE ml_ledgers SET red_ml = 0, blue_ml = 0, green_ml = 0, dark_ml = 0"))
         
     return "OK"
 
