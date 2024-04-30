@@ -19,21 +19,15 @@ def reset():
 
     with db.engine.begin() as connection:
         # Set gold back to 100
-        goldcount = connection.execute(sqlalchemy.text("SELECT SUM(change) AS gold FROM gold_ledgers")).fetchone()[0]
-        if (goldcount > 0):
-            connection.execute(
+        connection.execute(sqlalchemy.text("TRUNCATE TABLE gold_ledgers"))
+        connection.execute(
                     sqlalchemy.text("INSERT INTO gold_ledgers (change) VALUES (:change)"),
-                    {"change": -(goldcount)})
-        if(goldcount < 0):
-            connection.execute(
-                    sqlalchemy.text("INSERT INTO gold_ledgers (change) VALUES (:change)"),
-                    {"change": (goldcount)})
-                
+                    {"change": 100}
+                )
         # setting all potion_ledgers to 0
-        connection.execute(sqlalchemy.text("UPDATE potion_ledgers SET change = 0"))
+        connection.execute(sqlalchemy.text("TRUNCATE TABLE potion_ledgers"))
         # mls back to 0
 
-        connection.execute(sqlalchemy.text("UPDATE ml_ledgers SET red_ml = 0, blue_ml = 0, green_ml = 0, dark_ml = 0"))
-        
+        connection.execute(sqlalchemy.text("TRUNCATE TABLE ml_ledgers"))
     return "OK"
 
