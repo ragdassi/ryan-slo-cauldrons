@@ -149,10 +149,10 @@ def checkout(cart_id: int, cart_checkout: CartCheckout):
             total_potions_bought += item.item_quantity
 
             # Subtract potions
-            connection.execute(
-                sqlalchemy.text("UPDATE potions SET quantity = quantity - :quantity WHERE sku = :sku"),
-                {"quantity": total_potions_bought, "sku": item.item_sku}
-            )
+            # connection.execute(
+            #     sqlalchemy.text("UPDATE potions SET quantity = quantity - :quantity WHERE sku = :sku"),
+            #     {"quantity": total_potions_bought, "sku": item.item_sku}
+            # )
 
             ###LEDGER
             connection.execute(sqlalchemy.text("INSERT INTO potion_ledgers (potion_id, change) VALUES (:potion_id, :change)"),

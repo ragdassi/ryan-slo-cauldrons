@@ -62,9 +62,9 @@ def post_deliver_bottles(potions_delivered: list[PotionInventory], order_id: int
                     {"dark_ml": -(potion_type[3])}
                     )
 
-                # Update quantity for correct SKU! 
-                connection.execute(sqlalchemy.text("UPDATE potions SET quantity = quantity + :quantity WHERE sku = :sku"),
-                    {"quantity":added_potions, "sku": sku})
+                # # Update quantity for correct SKU! 
+                # connection.execute(sqlalchemy.text("UPDATE potions SET quantity = quantity + :quantity WHERE sku = :sku"),
+                #     {"quantity":added_potions, "sku": sku})
 
                ###LEDGER -- note, I will eventually not need endpoint above because I can SUM all deltas in potions_ledgers where id is potion_id
                 connection.execute(sqlalchemy.text("INSERT INTO potion_ledgers (potion_id, change) VALUES (:potion_id, :change)"),
