@@ -21,8 +21,6 @@ def get_catalog():
                             "GROUP BY potion_id")
         ).fetchall()
         
-        print(result)
-        
         for row in result:
             potion_id = row.potion_id
             total_change = row.total_change or 0
