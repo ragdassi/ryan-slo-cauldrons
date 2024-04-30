@@ -15,13 +15,30 @@ def get_catalog():
     """
     catalog = []
     with db.engine.begin() as connection:
-        result = connection.execute(sqlalchemy.text("SELECT quantity, sku, red, green, blue, dark, price FROM potions WHERE quantity > 0")).all()
-
+        result = connection.execute(
+            sqlalchemy.text("SELECT potion_id, COALESCE(SUM(change), 0) AS total_change "
+                            "FROM potion_ledgers "
+                            "GROUP BY potion_id")
+        ).fetchall()
+        
         print(result)
         
         for row in result:
-            catalog.append({"sku": row.sku, "quantity": row.quantity, "potion_type": [row.red, row.green, row.blue, row.dark], "price": row.price})
-    
+            potion_id = row.potion_id
+            total_change = row.total_change or 0
+            
+            if total_change != 0:
+                potion_info = connection.execute(
+                    sqlalchemy.text("SELECT sku, red, green, blue, dark, price FROM potions WHERE id = :id"),
+                    {"id": potion_id}
+                ).fetchone()
+
+                catalog.append({
+                    "sku": potion_info.sku,
+                    "quantity": total_change,  # Use total_change as the quantity
+                    "potion_type": [potion_info.red, potion_info.green, potion_info.blue, potion_info.dark],
+                    "price": potion_info.price
+                })
     return catalog
 
     
