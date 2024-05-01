@@ -23,7 +23,11 @@ def get_inventory():
         gold_sum_result = connection.execute(sqlalchemy.text("SELECT SUM(change) AS gold FROM gold_ledgers")).fetchone()[0]
         
         sum = connection.execute(sqlalchemy.text("SELECT SUM(change) AS change FROM potion_ledgers")).fetchone()  
-        total_quantity = sum[0]
+        
+        if(sum):
+            total_quantity = sum[0]
+        else:
+            total_quantity = 0
         
     total_ml = greenml + redml + blueml + darkml
 
