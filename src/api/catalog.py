@@ -25,7 +25,7 @@ def get_catalog():
             potion_id = row.potion_id
             total_change = row.total_change or 0
             
-            if total_change != 0:
+            if total_change > 0:
                 potion_info = connection.execute(
                     sqlalchemy.text("SELECT sku, red, green, blue, dark, price FROM potions WHERE id = :id"),
                     {"id": potion_id}

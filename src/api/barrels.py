@@ -116,8 +116,6 @@ def get_wholesale_purchase_plan(wholesale_catalog: list[Barrel]):
 
     else gold, potion_type, MAX_ML - currentml)
     """
-
-
     with db.engine.begin() as connection:
         gold = connection.execute(sqlalchemy.text("SELECT SUM(change) AS gold FROM gold_ledgers")).fetchone()[0]
         print(gold)
@@ -133,8 +131,6 @@ def get_wholesale_purchase_plan(wholesale_catalog: list[Barrel]):
                     "quantity": quant
                 })
                 gold_count += wholesale_catalog[i].price
-               
-                
 
     return barrel_plan
                 
