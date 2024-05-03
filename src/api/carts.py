@@ -145,7 +145,8 @@ def checkout(cart_id: int, cart_checkout: CartCheckout):
     # Update global inventory
     with db.engine.begin() as connection:
         
-        cart_items = connection.execute(sqlalchemy.text("SELECT * from cart_items")).fetchall()
+        cart_items = connection.execute(sqlalchemy.text("SELECT * from cart_items WHERE cart_id = :cart_id"),
+            {"cart_id": cart_id}).fetchall()
         total_gold_paid = 0
         total_potions_bought = 0
 
