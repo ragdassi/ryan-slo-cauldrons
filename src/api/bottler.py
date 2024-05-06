@@ -41,25 +41,25 @@ def post_deliver_bottles(potions_delivered: list[PotionInventory], order_id: int
                 if (potion_type[0] > 0):
                     ###LEDGER
                     connection.execute(sqlalchemy.text("INSERT INTO ml_ledgers (red_ml) VALUES (:red_ml)"),
-                    {"red_ml": -(potion_type[0])}
+                    {"red_ml": -(potion_type[0])* added_potions}
                     )
                 
                 if (potion_type[1] > 0):
                     ###LEDGER
                     connection.execute(sqlalchemy.text("INSERT INTO ml_ledgers (green_ml) VALUES (:green_ml)"),
-                    {"green_ml": -(potion_type[1])}
+                    {"green_ml": -(potion_type[1]) *added_potions}
                     )
 
                 if (potion_type[2] > 0):
                     ###LEDGER
                     connection.execute(sqlalchemy.text("INSERT INTO ml_ledgers (blue_ml) VALUES (:blue_ml)"),
-                    {"blue_ml": -(potion_type[2])}
+                    {"blue_ml": -(potion_type[2])*added_potions}
                     )
 
                 if (potion_type[3] > 0):
                     ###LEDGER
                     connection.execute(sqlalchemy.text("INSERT INTO ml_ledgers (dark_ml) VALUES (:dark_ml)"),
-                    {"dark_ml": -(potion_type[3])}
+                    {"dark_ml": -(potion_type[3])*added_potions}
                     )
 
                ###LEDGER -- note, I will eventually not need endpoint above because I can SUM all deltas in potions_ledgers where id is potion_id
