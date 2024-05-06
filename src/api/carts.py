@@ -5,6 +5,7 @@ from enum import Enum
 import sqlalchemy
 from src import database as db
 
+
 router = APIRouter(
     prefix="/carts",
     tags=["cart"],
@@ -53,20 +54,135 @@ def search_orders(
     Your results must be paginated, the max results you can return at any
     time is 5 total line items.
     """
+    """
+    General Idea:
+    prev initially "" but on click next, there will be prev button. strings det. whether dsiplay button.
+    """
+    
+    metadata = sqlalchemy.MetaData()
 
+    cart_items = sqlalchemy.Table(
+        'cart_items',
+        metadata,
+        sqlalchemy.Column('item_id', sqlalchemy.Integer, primary_key=True),
+        sqlalchemy.Column('item_sku', sqlalchemy.String),
+        sqlalchemy.Column('item_quantity', sqlalchemy.Integer),
+        sqlalchemy.Column('timestamp', sqlalchemy.DateTime),
+        sqlalchemy.Column('cart_id', sqlalchemy.Integer),
+        sqlalchemy.Column('potion_id', sqlalchemy.Integer)
+    )
+
+    carts = sqlalchemy.Table(
+        'carts',
+        metadata,
+        sqlalchemy.Column('id', sqlalchemy.Integer, primary_key=True),
+        sqlalchemy.Column('customer_name', sqlalchemy.String),
+        sqlalchemy.Column('timestamp', sqlalchemy.DateTime),
+        sqlalchemy.Column('character_class', sqlalchemy.String),
+        sqlalchemy.Column('level', sqlalchemy.Integer),
+    )
+
+    potions = sqlalchemy.Table(
+        'potions',
+        metadata,
+        sqlalchemy.Column('id', sqlalchemy.Integer, primary_key=True),
+        sqlalchemy.Column('price', sqlalchemy.Float),
+    
+    )
+
+    if sort_col == search_sort_options.timestamp:
+        order_by = cart_items.c.timestamp
+    elif sort_col == search_sort_options.customer_name:
+        order_by = carts.c.customer_name
+    elif sort_col == search_sort_options.item_sku:
+        order_by = cart_items.c.item_sku
+    elif sort_col == search_sort_options.line_item_total:
+        order_by = cart_items.c.line_item_total
+    else:
+        raise ValueError("Invalid sort column")
+
+    if sort_col != search_sort_options.timestamp and sort_order == search_sort_order.desc:
+        order_by = sqlalchemy.desc(order_by)
+
+    stmt = (
+        sqlalchemy.select(
+            cart_items.c.item_id,
+            cart_items.c.item_sku,
+            carts.c.customer_name,
+            (cart_items.c.item_quantity * potions.c.price).label("line_item_total"),
+            cart_items.c.timestamp
+        )
+        .select_from(
+            cart_items
+            .join(carts, cart_items.c.cart_id == carts.c.id)
+            .join(potions, cart_items.c.potion_id == potions.c.id)
+        )
+        .limit(5)
+        .order_by(order_by, cart_items.c.item_id)
+    )
+
+    if customer_name:
+        stmt = stmt.where(carts.c.customer_name.ilike(f"%{customer_name}%"))
+    if potion_sku:
+        # Adjust the condition to filter by item_sku in cart_items
+        stmt = stmt.where(cart_items.c.item_sku.ilike(f"%{potion_sku}%"))
+
+    prev_token = ""
+    next_token = ""
+    if search_page:
+        if sort_order == search_sort_order.desc:
+            stmt = stmt.where(cart_items.c.timestamp < search_page)
+        else:
+            stmt = stmt.where(cart_items.c.timestamp > search_page)
+    
+    with db.engine.begin() as connection:
+        result = connection.execute(stmt)
+        json_result = []
+        for row in result:
+            json_result.append({
+                "line_item_id": row.item_id,
+                "item_sku": row.item_sku,
+                "customer_name": row.customer_name,
+                "line_item_total": row.line_item_total,
+                "timestamp": row.timestamp.strftime("%Y-%m-%dT%H:%M:%SZ")  # ISO 8601
+            })
+
+        # checking if there are previous or next pages
+        # You need to adjust this logic based on the actual database structure
+        # and the way you're handling pagination
+        if search_page:
+            # Check if there are more previous results
+            prev_stmt = stmt.offset(-5)
+            prev_result = connection.execute(prev_stmt)
+            if prev_result.fetchall():
+                prev_token = "previous"
+            
+            # Check if there are more next results
+            next_stmt = stmt.offset(5)
+            next_result = connection.execute(next_stmt)
+            if next_result.fetchall():
+                next_token = "next"
+
+    # Return the results along with previous and next tokens
     return {
-        "previous": "",
-        "next": "",
-        "results": [
-            {
-                "line_item_id": 1,
-                "item_sku": "1 oblivion potion",
-                "customer_name": "Scaramouche",
-                "line_item_total": 50,
-                "timestamp": "2021-01-01T00:00:00Z",
-            }
-        ],
+        "previous": prev_token,
+        "next": next_token,
+        "results": json_result
     }
+
+    # return {
+    #     "previous": "",
+    #     "next": "",
+    #     "results": [
+    #         {
+    #             "line_item_id": 1,
+    #             "item_sku": "1 oblivion potion",
+    #             "customer_name": "Scaramouche",
+    #             "line_item_total": 50,
+    #             "timestamp": "2021-01-01T00:00:00Z",
+    #         }
+    #     ],
+    # }
 
 
 class Customer(BaseModel):
