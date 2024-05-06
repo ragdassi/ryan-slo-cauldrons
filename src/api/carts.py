@@ -97,7 +97,7 @@ def search_orders(
     elif sort_col == search_sort_options.item_sku:
         order_by = cart_items.c.item_sku
     elif sort_col == search_sort_options.line_item_total:
-        order_by = cart_items.c.line_item_total
+        order_by = cart_items.c.item_quantity
     else:
         raise ValueError("Invalid sort column")
 
@@ -129,6 +129,7 @@ def search_orders(
 
     prev_token = ""
     next_token = ""
+
     if search_page:
         if sort_order == search_sort_order.desc:
             stmt = stmt.where(cart_items.c.timestamp < search_page)
@@ -147,17 +148,14 @@ def search_orders(
                 "timestamp": row.timestamp.strftime("%Y-%m-%dT%H:%M:%SZ")  # ISO 8601
             })
 
-        # checking if there are previous or next pages
-        # You need to adjust this logic based on the actual database structure
-        # and the way you're handling pagination
         if search_page:
-            # Check if there are more previous results
+            # Check if theres more previous results
             prev_stmt = stmt.offset(-5)
             prev_result = connection.execute(prev_stmt)
             if prev_result.fetchall():
                 prev_token = "previous"
             
-            # Check if there are more next results
+            # Check if theres more next results
             next_stmt = stmt.offset(5)
             next_result = connection.execute(next_stmt)
             if next_result.fetchall():
