@@ -91,7 +91,11 @@ def search_orders(
     )
 
     if sort_col == search_sort_options.timestamp:
-        order_by = cart_items.c.timestamp
+        # ascending vs descending logic, timestamps
+        if sort_order == search_sort_order.desc:
+            order_by = cart_items.c.timestamp.desc()
+        else:
+            order_by = cart_items.c.timestamp.asc()
     elif sort_col == search_sort_options.customer_name:
         order_by = carts.c.customer_name
     elif sort_col == search_sort_options.item_sku:
@@ -124,7 +128,6 @@ def search_orders(
     if customer_name:
         stmt = stmt.where(carts.c.customer_name.ilike(f"%{customer_name}%"))
     if potion_sku:
-        # Adjust the condition to filter by item_sku in cart_items
         stmt = stmt.where(cart_items.c.item_sku.ilike(f"%{potion_sku}%"))
 
     prev_token = ""
@@ -167,6 +170,7 @@ def search_orders(
         "next": next_token,
         "results": json_result
     }
+
 
 
 class Customer(BaseModel):
