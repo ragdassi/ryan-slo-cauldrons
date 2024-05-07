@@ -4,6 +4,8 @@ from src.api import auth
 from enum import Enum
 import sqlalchemy
 from src import database as db
+from datetime import datetime
+from math import ceil
 
 
 router = APIRouter(
@@ -108,38 +110,58 @@ def search_orders(
     if sort_col != search_sort_options.timestamp and sort_order == search_sort_order.desc:
         order_by = sqlalchemy.desc(order_by)
 
-    stmt = (
-        sqlalchemy.select(
-            cart_items.c.item_id,
-            cart_items.c.item_sku,
-            carts.c.customer_name,
-            (cart_items.c.item_quantity * potions.c.price).label("line_item_total"),
-            cart_items.c.timestamp
-        )
-        .select_from(
-            cart_items
-            .join(carts, cart_items.c.cart_id == carts.c.id)
-            .join(potions, cart_items.c.potion_id == potions.c.id)
-        )
-        .limit(5)
-        .order_by(order_by, cart_items.c.item_id)
-    )
-
+    filter_conditions = []
     if customer_name:
-        stmt = stmt.where(carts.c.customer_name.ilike(f"%{customer_name}%"))
+        filter_conditions.append(carts.c.customer_name.ilike(f"%{customer_name}%"))
     if potion_sku:
-        stmt = stmt.where(cart_items.c.item_sku.ilike(f"%{potion_sku}%"))
+        filter_conditions.append(cart_items.c.item_sku.ilike(f"%{potion_sku}%"))
 
-    prev_token = ""
-    next_token = ""
-
-    if search_page:
-        if sort_order == search_sort_order.desc:
-            stmt = stmt.where(cart_items.c.timestamp < search_page)
-        else:
-            stmt = stmt.where(cart_items.c.timestamp > search_page)
     
+    # pagination
     with db.engine.begin() as connection:
+        
+        tot = connection.execute(sqlalchemy.text("SELECT * FROM cart_items")).fetchall()
+        total = len(tot)
+        print(total)
+
+        if search_page:
+            curpage = int(search_page)
+            prev_token = str(curpage - 1) if curpage > 0 else ""
+            next_token = str(curpage + 1) if (curpage + 1) * 5 < total else ""
+            if prev_token:  # If previous page is requested
+                offset = (curpage - 1) * 5 if curpage > 1 else 0
+            elif next_token:  # If next page is requested
+                offset = (curpage +1) * 5
+        else:
+            prev_token = ""
+            next_token = "1" if total > 5 else ""
+            offset = 0  
+
+        # SQL
+        stmt = (
+            sqlalchemy.select(
+                cart_items.c.item_id,
+                cart_items.c.item_sku,
+                carts.c.customer_name,
+                (cart_items.c.item_quantity * potions.c.price).label("line_item_total"),
+                cart_items.c.timestamp
+            )
+            .select_from(
+                cart_items
+                .join(carts, cart_items.c.cart_id == carts.c.id)
+                .join(potions, cart_items.c.potion_id == potions.c.id)
+            )
+            .limit(5)
+            .offset(offset)
+            .order_by(order_by, cart_items.c.item_id)
+        )
+        
+    
+        if filter_conditions:
+            stmt = stmt.where(sqlalchemy.and_(*filter_conditions))
+        
+        stmt = stmt.limit(5).offset(offset)
+
         result = connection.execute(stmt)
         json_result = []
         for row in result:
@@ -151,20 +173,8 @@ def search_orders(
                 "timestamp": row.timestamp.strftime("%Y-%m-%dT%H:%M:%SZ")  # ISO 8601
             })
 
-        if search_page:
-            # Check if theres more previous results
-            prev_stmt = stmt.offset(-5)
-            prev_result = connection.execute(prev_stmt)
-            if prev_result.fetchall():
-                prev_token = "previous"
-            
-            # Check if theres more next results
-            next_stmt = stmt.offset(5)
-            next_result = connection.execute(next_stmt)
-            if next_result.fetchall():
-                next_token = "next"
-
-    # Return the results along with previous and next tokens
+        
+    
     return {
         "previous": prev_token,
         "next": next_token,
