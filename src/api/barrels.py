@@ -128,7 +128,7 @@ def get_wholesale_purchase_plan(wholesale_catalog: list[Barrel]):
                 quant += 1
                 barrel_plan.append({
                     "sku": wholesale_catalog[i].sku,
-                    "quantity": quant
+                    "quantity": 1
                 })
                 gold_count += wholesale_catalog[i].price
 

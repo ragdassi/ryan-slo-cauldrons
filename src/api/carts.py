@@ -120,24 +120,24 @@ def search_orders(
     # pagination
     with db.engine.begin() as connection:
         
-        tot = connection.execute(sqlalchemy.text("SELECT * FROM cart_items")).fetchall()
-        total = len(tot)
-        print(total)
+        tot = connection.execute(sqlalchemy.text("SELECT COUNT(*) FROM cart_items")).scalar_one()
+        
+        print(tot)
 
         if search_page:
             curpage = int(search_page)
             items_per_page = 5
-            #offset = (curpage - 1) * items_per_page
+            offset = (curpage) * items_per_page
             
             prev_token = str(curpage - 1) if curpage > 0 else ""
-            next_token = str(curpage + 1) if (curpage + 1) * 5 < total else ""
-            if prev_token:  # If previous page is requested
-                offset = (-5) if curpage > 1 else 0
-            elif next_token:  # If next page is requested
-                offset = 5
+            next_token = str(curpage + 1) if (curpage + 1) * 5 < tot else ""
+
+            # OFFSETTING 
+            
         else:
             prev_token = ""
-            next_token = "1" if total > 5 else ""
+            next_token = "1" if tot > 5 else ""
+            offset = 0
            
 
         # SQL
@@ -155,16 +155,15 @@ def search_orders(
                 .join(potions, cart_items.c.potion_id == potions.c.id)
             )
             .order_by(order_by, cart_items.c.item_id)
+            .offset(offset)
+            .limit(5)
         )
         
-    
+        #filter should reset back to first page
         if filter_conditions:
             stmt = stmt.where(sqlalchemy.and_(*filter_conditions))
-        
-        if search_page:
-            stmt = stmt.limit(5).offset(offset)
-        else:
-            stmt = stmt.limit(5)
+    
+    
 
         result = connection.execute(stmt)
         json_result = []
