@@ -44,6 +44,7 @@ def post_deliver_barrels(barrels_delivered: list[Barrel], order_id: int):
         for barrel in barrels_delivered:
             subtracted_gold = barrel.price * barrel.quantity
             added_ml = barrel.ml_per_barrel * barrel.quantity
+            print(barrel.potion_type)
 
             # Green
             if(barrel.potion_type == [0, 1, 0, 0]):
