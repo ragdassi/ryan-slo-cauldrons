@@ -37,8 +37,7 @@ def post_deliver_barrels(barrels_delivered: list[Barrel], order_id: int):
 
 
     """
-    if len(barrels_delivered) != 1:
-        return {"error": "Only one barrel can be delivered per order."}, 400
+   
 
     with db.engine.begin() as connection:
         for barrel in barrels_delivered:
