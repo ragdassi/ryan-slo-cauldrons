@@ -49,7 +49,7 @@ def get_capacity_plan():
         gold = connection.execute(sqlalchemy.text("SELECT SUM(change) AS gold FROM gold_ledgers")).fetchone()[0]
         potion_capacity = ml_capacity = 0
 
-        if gold > 2000 and cur_potion_cap  < 5:
+        if gold > 1000 and cur_potion_cap  < 5:
             potion_capacity = 1
             #gold -= 1000
             connection.execute(
@@ -57,7 +57,7 @@ def get_capacity_plan():
                     {"change": -(1000)}
                 )
 
-        if gold > 2000 and cur_ml_cap < 10:
+        if gold > 1000 and cur_ml_cap < 10:
             ml_capacity = 1
             connection.execute(
                     sqlalchemy.text("INSERT INTO gold_ledgers (change) VALUES (:change)"),

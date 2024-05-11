@@ -37,7 +37,6 @@ def post_deliver_barrels(barrels_delivered: list[Barrel], order_id: int):
 
 
     """
-   
 
     with db.engine.begin() as connection:
         for barrel in barrels_delivered:
