@@ -51,7 +51,7 @@ def get_capacity_plan():
 
         if gold > 1000 and cur_potion_cap  < 5:
             potion_capacity = 1
-            #gold -= 1000
+            gold -= 1000
             connection.execute(
                     sqlalchemy.text("INSERT INTO gold_ledgers (change) VALUES (:change)"),
                     {"change": -(1000)}
